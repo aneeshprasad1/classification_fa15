@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -24,6 +24,7 @@ import samples
 import sys
 import util
 import numpy as np
+import pdb
 # from pacman import GameState
 
 TEST_SET_SIZE = 100
@@ -75,17 +76,74 @@ def enhancedFeatureExtractorDigit(datum):
     for this datum (datum is of type samples.Datum).
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
-
+    We added 3 move entries to out feature vectors. These are used to represent binary features
+    of how many contiguous white regions there are in the digit (1, 2, or 3).
     ##
     """
-    features =  basicFeatureExtractorDigit(datum)
-
+    features = np.zeros(DIGIT_DATUM_WIDTH*DIGIT_DATUM_HEIGHT, int)
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    num_double_cols = 0
+    possible_circle_points = set()
+    for x in range(DIGIT_DATUM_WIDTH):
+      for y in range(DIGIT_DATUM_HEIGHT):
+        if datum.getPixel(x, y) > 0:
+          features[DIGIT_DATUM_HEIGHT*x+y] = 1
+        else:
+          possible_circle_points.add((x,y))
+
+    x = connected_components(possible_circle_points, datum)
+
+    result = np.zeros(3)
+    if len(x) == 1:
+      result[0] = 1
+    elif len(x) == 2:
+      result[1] = 1
+    elif len(x) == 3:
+      result[2] = 1
+
+    features = np.append(features, result)
     return features
 
+def neighbors(x, y):
+  result = []
+  if x - 1 >= 0:
+    result.append((x-1, y))
+    if y - 1 >= 0:
+      result.append((x-1, y-1))
+    if y+1 < DIGIT_DATUM_HEIGHT:
+      result.append((x-1, y+1))
 
+  if x + 1 < DIGIT_DATUM_WIDTH:
+    result.append((x+1, y))
+    if y - 1 >= 0:
+      result.append((x+1, y-1))
+    if y+1 < DIGIT_DATUM_HEIGHT:
+      result.append((x+1, y+1))
+
+  if y - 1 >= 0: result.append((x, y-1))
+  if y+1 < DIGIT_DATUM_HEIGHT: result.append((x, y+1))
+  return result
+
+def connected_components(points, datum):
+  result = []
+  visited = set()
+  while len(points) != 0:
+    start_node = points.pop()
+    frontier = [start_node]
+    next_cc = set()
+    while len(frontier) != 0:
+      curr_node = frontier.pop()
+      if curr_node in points: points.remove(curr_node)
+      next_cc.add(curr_node)
+      visited.add(curr_node)
+      valid_neighbors = neighbors(curr_node[0], curr_node[1])
+      for node in valid_neighbors:
+        if datum.getPixel(node[0], node[1]) == 0:
+          if node not in frontier and node not in visited:
+            frontier.append(node)
+    result.append(next_cc)
+  return result
 
 def basicFeatureExtractorPacman(state):
     """
@@ -126,7 +184,7 @@ def enhancedPacmanFeatures(state, action):
     It should return a counter with { <feature name> : <feature value>, ... }
     """
     features = util.Counter()
-    
+
     # We are not using this particular method this semester. No need to implement this.
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
@@ -168,6 +226,7 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
     This code won't be evaluated. It is for your own optional use
     (and you can modify the signature if you want).
     """
+    # pdb.set_trace()
 
     # Put any code here...
     # Example of use:
