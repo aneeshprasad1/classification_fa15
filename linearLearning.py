@@ -38,7 +38,7 @@ def quadLoss(x, y):
     with quadratic loss functions)    
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return np.power(y-x, 2)
 
 def der_quadLoss_dx(x, y):
     """
@@ -51,7 +51,7 @@ def der_quadLoss_dx(x, y):
     with quadratic loss functions)
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return 2*(x-y)
 
 def der_dot_dw(x, weights):
     """
@@ -64,7 +64,8 @@ def der_dot_dw(x, weights):
     Hint: You may not need all of the input arguments.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return x
+    
 
 def stochasticGradientDescentUpdate(datum, label, weights, alpha, der_loss_dw):
     """
@@ -82,12 +83,13 @@ def stochasticGradientDescentUpdate(datum, label, weights, alpha, der_loss_dw):
     alpha: learning rate (gradient descent step size)
     
     der_loss_dw: Function for the derivative of the loss function with respect to the
-    weights. Function signature: der_loss_dw(datam, label, weights), returns an array 
+    weights. Function signature: der_loss_dw(datum, label, weights), returns an array 
     of the derivative of the loss function with respect to each self.weights term
     [der_loss_dw1, der_loss_dw2, ...]
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    der = der_loss_dw(datum, label, weights)
+    updatedWeights = weights - alpha * der
     
     return updatedWeights
 
@@ -103,7 +105,7 @@ def sigmoid(x):
     products with weights involved.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return 1/(1+np.exp(-x))
 
 def der_sigmoid_dx(x):
     """
@@ -118,7 +120,7 @@ def der_sigmoid_dx(x):
     advantage of the sigmoid function you already implemented.  
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return sigmoid(x)*(1-sigmoid(x))
 
 def softmax(x):
     """
@@ -138,8 +140,10 @@ def softmax(x):
     products with weights involved.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    num = np.exp(x)
+    denom = num.sum()
+    return num/denom
+    
 def der_softmax_dx(x, i, j):
     """
     The (i,j) entry of the Jacobian of the softmax function, dy_i/dx_j
@@ -226,7 +230,10 @@ class LinearRegression:
         """
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        X = trainingData_x
+        y = trainingData_y
+
+        weights = np.linalg.inv(np.dot(X.T, X)).dot(X.T).dot(y)
 
         self.weights = weights
 
@@ -290,7 +297,7 @@ class LinearRegression:
         x is an array of the same length as self.weights (both include the bias term)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return np.dot(self.weights, x)
         
     def regressionLoss(self, x_data, y_data):
         """
@@ -310,7 +317,8 @@ class LinearRegression:
         Returns a single float value for the loss
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        y_pred = self.hypothesis(x)
+        return quadLoss(y_true, y_pred)
         
     def der_loss_dw(self, x, y_true, weights):
         """
@@ -322,7 +330,10 @@ class LinearRegression:
         [der_loss_dw1, der_loss_dw2, ...]
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        dot_dw = der_dot_dw(x, weights)
+        quadLoss_dw = der_quadLoss_dx(self.hypothesis(x), y_true)
+
+        return quadLoss_dw*dot_dw
 
 class BinaryLinearClassifier:
     """
@@ -423,7 +434,7 @@ class BinaryLinearClassifier:
         has already been included in both x and self.weights.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return sigmoid(np.dot(x, self.weights))
 
     def classificationLoss(self, x_data, y_data):
         """
@@ -443,7 +454,7 @@ class BinaryLinearClassifier:
         Returns a single float value for the loss
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return np.power(y_true - x, 2)
 
     def der_loss_dw(self, x, y_true, weights):
         """
@@ -463,7 +474,14 @@ class BinaryLinearClassifier:
         what value would you need to pass as input to that function?
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        dot_x_w = np.dot(x, weights)
+        sig_x_w = sigmoid(dot_x_w)
+
+        der_dot = der_dot_dw(x, weights)
+        der_sig = der_sigmoid_dx(dot_x_w)
+        der_loss = der_quadLoss_dx(sig_x_w, y_true)
+
+        return der_loss*der_sig*der_dot
 
 class MulticlassLinearClassifier:
     """
@@ -547,7 +565,7 @@ class MulticlassLinearClassifier:
         numClasses = len(self.legalLabels)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return softmax([np.dot(x, w) for w in self.weights])            
 
     def classificationLoss(self, x_data, y_data):
         """
